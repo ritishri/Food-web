@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-neon-purple: #c13eff;
+  --color-dark-bg: #111115;
+  --color-card-bg: #1a1a24;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-dark-bg);
+    color: white;
+  }
+}
