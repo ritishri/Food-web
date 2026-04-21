@@ -11,6 +11,7 @@ import CheckoutView from './views/CheckoutView';
 import AdminDashboard from './views/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import { fetchCart, clearCart } from './store/slices/cartSlice';
+import { fetchAddresses } from './store/slices/addressSlice';
 
 function App() {
   const dispatch = useDispatch();
@@ -19,6 +20,7 @@ function App() {
   useEffect(() => {
     if (user) {
       dispatch(fetchCart());
+      dispatch(fetchAddresses());
     } else {
       dispatch(clearCart());
     }
