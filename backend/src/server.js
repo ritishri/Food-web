@@ -20,6 +20,7 @@ app.use(cors());
 // Mount routers
 app.use('/api/v1/auth', require('./routes/authRoutes'));
 app.use('/api/v1/products', require('./routes/productRoutes'));
+app.use('/api/v1/cart', require('./routes/cartRoutes'));
 
 app.get('/', (req, res) => {
   res.send('Midnight Cravings API is running...');

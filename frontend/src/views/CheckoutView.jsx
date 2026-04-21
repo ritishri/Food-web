@@ -2,12 +2,36 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FaTrash, FaPlus, FaMinus, FaHome, FaCreditCard, FaPaypal, FaBitcoin } from 'react-icons/fa';
-import { removeFromCart } from '../store/slices/cartSlice';
+import { removeFromCart, removeFromCartAPI, updateCartItemAPI } from '../store/slices/cartSlice';
+import { toast } from 'react-toastify';
 
 const CheckoutView = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cart.items);
+  const { user } = useSelector(state => state.auth);
+
+  const handleRemove = (item) => {
+    const productId = item._id || item.id;
+    if (user) {
+      dispatch(removeFromCartAPI(productId));
+    } else {
+      dispatch(removeFromCart(productId));
+    }
+    toast.info('Item removed from cart');
+  };
+
+  const handleQtyChange = (item, delta) => {
+    const newQty = (item.quantity || 1) + delta;
+    const productId = item._id || item.id;
+    if (newQty <= 0) {
+      handleRemove(item);
+      return;
+    }
+    if (user) {
+      dispatch(updateCartItemAPI({ productId, quantity: newQty }));
+    }
+  };
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
   const tax = subtotal * 0.05;
@@ -53,23 +77,25 @@ const CheckoutView = () => {
                   </div>
                 ) : (
                   cartItems.map((item, idx) => (
-                    <div key={idx} className="bg-card-bg p-6 rounded-[2rem] border border-white/5 flex items-center gap-6 group">
-                      <div className="h-24 w-24 rounded-2xl overflow-hidden border border-gray-800">
+                    <div key={item._id || item.id || idx} className="bg-card-bg p-6 rounded-[2rem] border border-white/5 flex items-center gap-6 group">
+                      <div className="h-24 w-24 rounded-2xl overflow-hidden border border-gray-800 shrink-0">
                         <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-start mb-2">
-                           <h3 className="text-lg font-bold">{item.name}</h3>
-                           <span className="text-lg font-black italic">₹{item.price}</span>
+                           <h3 className="text-lg font-bold">{item.title || item.name}</h3>
+                           <span className="text-lg font-black italic">₹{(item.price * (item.quantity || 1)).toFixed(0)}</span>
                         </div>
-                        <p className="text-[10px] text-gray-500 font-bold tracking-widest uppercase mb-4">Extra Truffle Maya, No Onions</p>
-                        <div className="flex items-center justify-between">
+                        {item.spiceLevel && (
+                          <p className="text-[10px] text-gray-500 font-bold tracking-widest uppercase mb-4">Spice: {item.spiceLevel}</p>
+                        )}
+                        <div className="flex items-center justify-between mt-2">
                            <div className="flex items-center bg-black/40 rounded-xl p-1 gap-4">
-                             <button className="p-2 text-gray-500 hover:text-white"><FaMinus className="text-[10px]" /></button>
-                             <span className="text-sm font-bold w-4 text-center">01</span>
-                             <button className="p-2 text-gray-500 hover:text-white"><FaPlus className="text-[10px]" /></button>
+                             <button onClick={() => handleQtyChange(item, -1)} className="p-2 text-gray-500 hover:text-white"><FaMinus className="text-[10px]" /></button>
+                             <span className="text-sm font-bold w-4 text-center">{item.quantity || 1}</span>
+                             <button onClick={() => handleQtyChange(item, 1)} className="p-2 text-gray-500 hover:text-white"><FaPlus className="text-[10px]" /></button>
                            </div>
-                           <button onClick={() => dispatch(removeFromCart(item.id))} className="text-red-500/50 hover:text-red-500 transition-colors p-2"><FaTrash /></button>
+                           <button onClick={() => handleRemove(item)} className="text-red-500/50 hover:text-red-500 transition-colors p-2"><FaTrash /></button>
                         </div>
                       </div>
                     </div>
@@ -104,9 +130,9 @@ const CheckoutView = () => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                  {[
-                   { id: 'card', name: 'Credit Card', icon: <FaCreditCard /> },
-                   { id: 'paypal', name: 'PayPal', icon: <FaPaypal /> },
-                   { id: 'crypto', name: 'Crypto', icon: <FaBitcoin /> }
+                   { id: 'card', name: 'Cash On Delivery', icon: <FaCreditCard /> },
+                   { id: 'paypal', name: 'UPI', icon: <FaPaypal /> },
+                   { id: 'crypto', name: 'Credit Card', icon: <FaCreditCard /> }
                  ].map((p, idx) => (
                    <button key={p.id} className={`flex flex-col items-center justify-center p-8 rounded-[2rem] border transition-all ${idx === 0 ? 'bg-[#1a1a2b] border-neon-purple shadow-[0_0_20px_rgba(193,62,255,0.15)]' : 'bg-card-bg border-white/5 hover:border-gray-700'}`}>
                       <div className="text-2xl mb-3 text-gray-300">{p.icon}</div>

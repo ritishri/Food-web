@@ -2,8 +2,9 @@ import React, { useEffect,useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { FaShoppingCart, FaStar, FaFilter, FaSortAmountDown, FaChevronLeft } from 'react-icons/fa';
-import { addToCart } from '../store/slices/cartSlice';
+import { addToCart, addToCartAPI } from '../store/slices/cartSlice';
 import { fetchProductsByCategory, reset } from '../store/slices/productSlice';
+import { toast } from 'react-toastify';
 
 const CategoryView = () => {
   const { categoryId } = useParams();
@@ -11,7 +12,17 @@ const CategoryView = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cart.items);
   const { items, isLoading, isError, message } = useSelector(state => state.products);
+  const { user } = useSelector(state => state.auth);
   const [activeFilter, setActiveFilter] = useState('ALL ITEMS');
+
+  const handleAddToCart = (item) => {
+    if (user) {
+      dispatch(addToCartAPI({ productId: item._id, quantity: 1 }));
+    } else {
+      dispatch(addToCart({ ...item, id: item._id }));
+    }
+    toast.success(`${item.name} added to cart!`);
+  };
 
 
   console.log("items",items);
@@ -117,7 +128,7 @@ const CategoryView = () => {
                       </div>
                     </div>
                     <button 
-                      onClick={() => dispatch(addToCart({ ...item, id: item._id }))}
+                      onClick={() => handleAddToCart(item)}
                       className="bg-neon-purple p-4 rounded-2xl hover:bg-purple-600 transition-all transform active:scale-90"
                     >
                       <FaShoppingCart className="text-white" />

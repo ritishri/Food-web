@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FaSearch, FaShoppingCart, FaUserCircle, FaStar, FaChevronRight } from 'react-icons/fa';
-import { addToCart } from '../store/slices/cartSlice';
+import { addToCart, addToCartAPI } from '../store/slices/cartSlice';
 import { logout } from '../store/slices/authSlice';
 import { toast } from 'react-toastify';
 
@@ -12,6 +12,12 @@ const LandingView = () => {
   const { user, isAuthenticated } = useSelector(state => state.auth);
   const cartItems = useSelector(state => state.cart.items);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const handleAddToCart = (item) => {
+    // Landing page items are static/hardcoded, no real productId — use local cart
+    dispatch(addToCart({ ...item, id: item.id }));
+    toast.success(`${item.name} added to cart!`);
+  };
 
   const categories = [
     { id: 'biryani', name: 'BIRYANI', image: '/biryani.png' },
@@ -232,10 +238,7 @@ const LandingView = () => {
                   {item.desc}
                 </p>
                 <button 
-                  onClick={() => {
-                    dispatch(addToCart(item));
-                    toast.success(`${item.name} added to cart!`);
-                  }}
+                  onClick={() => handleAddToCart(item)}
                   className="w-full bg-[#111111] hover:bg-neon-purple text-[10px] font-black py-4 rounded-2xl transition-all flex items-center justify-center gap-2"
                 >
                   <FaShoppingCart /> ADD TO CART
